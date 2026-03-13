@@ -8,14 +8,13 @@ export function useFetchPhotos() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    const controller = new AbortController();
 
     const loadPhotos = async () => {
       try {
         setLoading(true);
         setError('');
 
-        const response = await fetch(PHOTOS_ENDPOINT, { signal: controller.signal });
+        const response = await fetch(PHOTOS_ENDPOINT);
 
         if (!response.ok) {
           throw new Error('Unable to load photos right now. Please try again.');
@@ -24,20 +23,15 @@ export function useFetchPhotos() {
         const result = await response.json();
         setPhotos(result);
       } catch (fetchError) {
-        if (fetchError.name !== 'AbortError') {
           setError(fetchError.message || 'Something went wrong while fetching photos.');
-        }
       } finally {
-        if (!controller.signal.aborted) {
-          setLoading(false);
-        }
+        setLoading(false);
       }
     }
 
     loadPhotos();
 
     return () => {
-      controller.abort()
     }
   }, [])
 

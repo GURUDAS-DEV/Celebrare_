@@ -11,23 +11,13 @@ import {
 } from './state/favoritesReducer'
 
 function App() {
-  const { photos, loading, error } = useFetchPhotos();
-  const [searchTerm, setSearchTerm] = useState('');
+  const { photos, loading, error } = useFetchPhotos();//fetching data
+  const [searchTerm, setSearchTerm] = useState('');//used for searching photos 
 
-  const [favouriteIds, dispatch] = useReducer(
-    favoritesReducer,
-    [],
-    () => getInitialFavorites(FAVORITES_STORAGE_KEY),
-  );
+  //useReducer hooks to manage favorite photos.
+  const [favouriteIds, dispatch] = useReducer( favoritesReducer, [], () => getInitialFavorites(FAVORITES_STORAGE_KEY));
 
-  useEffect(() => {
-    localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(favouriteIds))
-  }, [favouriteIds]);
-
-  const handleSearchChange = useCallback((event) => {
-    setSearchTerm(event.target.value)
-  }, []);
-
+  //use memo for remembering the filtered photos and set of filtered photo ids.
   const filteredPhotos = useMemo(() => {
     const query = searchTerm.trim().toLowerCase()
     if (!query) {
@@ -35,15 +25,25 @@ function App() {
     }
     return photos.filter((photo) => photo.author.toLowerCase().includes(query))
   }, [photos, searchTerm])
-
-  const favouriteSet = useMemo(() => new Set(favouriteIds), [favouriteIds])
+  
+  const favouriteSet = useMemo(() => new Set(favouriteIds), [favouriteIds]);
+  
+  //useCallback for memoizing the search change handler and toggle favourite handler.
+  const handleSearchChange = useCallback((event) => {
+    setSearchTerm(event.target.value)
+  }, []);
 
   const handleToggleFavourite = useCallback(
     (photoId) => {
       dispatch(toggleFavourite(photoId))
     },
     [dispatch],
-  )
+  );
+  
+  //sets data in localstorage.
+  useEffect(() => {
+    localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(favouriteIds))
+  }, [favouriteIds]);
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-10">
